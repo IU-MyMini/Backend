@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="..\..\..\deps\BuildingBlocks.API.dll"/>
+        <Reference Include="..\..\..\deps\BuildingBlocks.Infrastructure.dll"/>
+        <Reference Include="..\..\..\deps\BuildingBlocks.Application.dll"/>
+        <Reference Include="..\..\..\deps\BuildingBlocks.Domain.dll"/>
+        <ProjectReference Include="..\Application\GradingModule.Application.csproj"/>
+        <ProjectReference Include="..\Infrastructure\GradingModule.Infrastructure.csproj"/>
+    </ItemGroup>
+</Project>

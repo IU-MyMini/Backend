@@ -1,0 +1,17 @@
+.idea/
+obj/
+bin/
+logs/
+
+*.jwk
+secrets.json
+*.env
+*.gen.*
+
+*.DotSettings.user
+
+.DS_Store
+
+.kiota.log
+
+!*.example.env
