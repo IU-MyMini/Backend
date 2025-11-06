@@ -1,0 +1,29 @@
+services:
+  database:
+    image: postgres
+    environment:
+      POSTGRES_DB: my-mini
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  
+  grading:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        MODULENAME: Grading
+    env_file:
+      - config/grading.env
+      - config/common.env
+    ports:
+      - "127.0.0.1:8012:80"
+    depends_on:
+      - database
+
+volumes:
+  postgres-data:
