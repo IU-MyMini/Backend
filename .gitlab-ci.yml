@@ -1,0 +1,67 @@
+---
+include:
+  - local: "base.yaml"
+
+generate-pipelines:
+  extends: .base
+  stage: setup
+  script:
+    - jsonnet .gitlab-ci.jsonnet --ext-str "MODULES=Grading" > generated-jobs.yml
+    - cat generated-jobs.yml
+  artifacts:
+    paths:
+      - generated-jobs.yml
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+trigger-pipelines:
+  stage: setup
+  needs:
+    - generate-pipelines
+  trigger:
+    include:
+      - artifact: generated-jobs.yml
+        job: generate-pipelines
+    strategy: depend
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+
+release-tag-build:
+  stage: build
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:stable-dind
+  script:
+    - |+
+      export IMAGE_NAME="$HARBOR_HOST/$HARBOR_PROJECT/$(echo ${CI_PROJECT_PATH} | awk -F / '{print $2"/"$3}')/$(echo ${MODULENAME} | awk '{print tolower($0)}')"
+      docker build --build-arg MODULENAME=${MODULENAME} -t "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}" -f ./Dockerfile .
+      docker tag "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}" "${IMAGE_NAME}:${CI_COMMIT_TAG}"
+      docker tag "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}" "${IMAGE_NAME}:latest"
+      docker login -u "$HARBOR_USERNAME" -p "$HARBOR_PASSWORD" "${HARBOR_HOST}"
+      docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+      docker push "${IMAGE_NAME}:${CI_COMMIT_TAG}"
+      docker push "${IMAGE_NAME}:latest"
+  parallel:
+    matrix:
+      - MODULENAME: [ Grading ]
+  rules:
+    - if: $CI_COMMIT_TAG
+
+release-tag-deploy:
+  stage: deploy
+  tags:
+    - my-mini-stg
+  needs:
+    - release-tag-build
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [ "" ]
+  script:
+    - |+
+      export MODULENAME_LOWER=$(echo ${MODULENAME} | awk '{print tolower($0)}')
+      export IMAGE_NAME="$HARBOR_HOST/$HARBOR_PROJECT/$(echo ${CI_PROJECT_PATH} | awk -F / '{print $2"/"$3}')/${MODULENAME_LOWER}"
+      kubectl set image deployment/${MODULENAME_LOWER} ${MODULENAME_LOWER}="${IMAGE_NAME}:${CI_COMMIT_TAG}" -n ${PROD_NAMESPACE}
+  parallel:
+    matrix:
+      - MODULENAME: [ Grading ]
+  rules:
+    - if: $CI_COMMIT_TAG

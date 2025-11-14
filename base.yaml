@@ -1,0 +1,11 @@
+stages:
+  - setup
+  - build
+  - deploy
+
+.base:
+  image: toolhippie/jsonnet:latest
+
+workflow:
+  rules:
+    - if: $CI
