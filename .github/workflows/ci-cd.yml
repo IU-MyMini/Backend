@@ -1,13 +1,18 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET test
+name: .NET
 
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+
+env:
+  TEST_BASE_URL: ${{ vars.TEST_BASE_URL }}
+  QAST002_2_ENDPOINTS: ${{ vars.QAST002_2_ENDPOINTS }}
+  QAST006_1_ENDPOINT: ${{ vars.QAST006_1_ENDPOINT }}
 
 jobs:
   lint:
@@ -47,12 +52,6 @@ jobs:
           indicators: true
           output: both
           thresholds: '30 60'
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: code-coverage-results.md
 
       - name: Copy Coverage File
         run: cp Modules/Grading/Tests/TestResults/**/coverage.cobertura.xml coverage.cobertura.xml
