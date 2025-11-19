@@ -9,6 +9,11 @@ on:
   pull_request:
     branches: [ "master" ]
 
+env:
+  TEST_BASE_URL: ${{ vars.TEST_BASE_URL }}
+  QAST002_2_ENDPOINTS: ${{ vars.QAST002_2_ENDPOINTS }}
+  QAST006_1_ENDPOINT: ${{ vars.QAST006_1_ENDPOINT }}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
