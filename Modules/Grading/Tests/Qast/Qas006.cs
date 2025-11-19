@@ -31,7 +31,7 @@ public class Qas006
         if (endpoint is null)
             Assert.Fail($"{envVar} env variable is not defined");
 
-        var          testDuration = new TimeSpan(0, 0, 10);
+        var          testDuration = new TimeSpan(0, 1, 0);
         const double percentile   = 0.99;
         const double targetTime   = 500; // milliseconds
 
