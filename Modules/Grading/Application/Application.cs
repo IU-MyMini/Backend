@@ -2,5 +2,5 @@
 
 public interface Application
 {
-    public static void init() {}
+    public static void init() { }
 }
