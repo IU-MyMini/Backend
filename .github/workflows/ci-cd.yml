@@ -13,28 +13,60 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test -c Release -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=opencover --no-build --verbosity normal Modules/Grading/Tests
-    - name: Create Test Coverage Badge
-      uses: simon-k/dotnet-code-coverage-badge@v1.0.0
-      id: create_coverage_badge
-      with:
-        label: Unit Test Coverage
-        color: brightgreen
-        path: Modules/Grading/Tests/TestResults/coverage.opencover.xml
-        gist-filename: code-coverage.json
-        gist-id: f47423f01e40ea21b2e6ca53124f96b0
-        gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}
-    - name: Print code coverage
-      run: echo "Code coverage percentage ${{steps.create_coverage_badge.outputs.percentage}}%"
-    - name: Print badge data
-      run: echo "Badge data ${{steps.test_step.outputs.badge}}"
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test -c Release --collect:"XPlat Code Coverage" Modules/Grading/Tests
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: Modules/Grading/Tests/TestResults/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '30 60'
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+      - name: Copy Coverage File
+        run: cp Modules/Grading/Tests/TestResults/**/coverage.cobertura.xml coverage.cobertura.xml
+      - name: Extract Coverage Percent
+        shell: pwsh
+        id: coverage
+        run: |
+          # Parse the XML file
+          [xml]$xml = Get-Content coverage.cobertura.xml
+          $node = $xml.SelectSingleNode("/coverage")
+          $lineRate = $node.Attributes["line-rate"].Value
+          $val = [double]::Parse($lineRate, [System.Globalization.CultureInfo]::InvariantCulture)
+          $percent = [math]::Round($val * 100)
+          echo "COVERAGE_PERCENT=$percent" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Coverage is $percent%"
+      - name: Update Badge Gist
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.ref == 'refs/heads/master'
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ secrets.GIST_ID }}
+          filename: code-coverage.json
+          label: Coverage
+          message: ${{ env.COVERAGE_PERCENT }}%
+          valColorRange: ${{ env.COVERAGE_PERCENT }}
+          maxColorRange: 90 # Green if > 90
+          minColorRange: 50 # Red if < 50
+          namedLogo: dotnet

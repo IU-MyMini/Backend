@@ -20,4 +20,12 @@
         <Using Include="Xunit"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Application\GradingModule.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="TestResults\cd2e744e-19f7-4ed1-a607-c8b0c78a161e\" />
+    </ItemGroup>
+
 </Project>

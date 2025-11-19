@@ -1,3 +1,5 @@
+using GradingModule.Application.Commands;
+
 namespace GradingModule.Tests.UnitTests;
 
 public partial class GradingTest
@@ -14,5 +16,13 @@ public partial class GradingTest
 
         // Assert 
         Assert.Equal(15, c);
+    }
+
+    [Fact]
+    public async void Hello()
+    {
+        var commandHandler = new HelloCommandHandler();
+        var result = await commandHandler.Handle(new HelloCommand(), CancellationToken.None);
+        Assert.Equal("Hello!", result);
     }
 }

@@ -2,6 +2,7 @@
 obj/
 bin/
 logs/
+TestResults/
 
 *.jwk
 secrets.json
