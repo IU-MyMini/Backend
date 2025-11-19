@@ -24,7 +24,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - name: Build
-        run: dotnet format --verify-no-changes --exclude-diagnostics IDE0055
+        run: dotnet format --verify-no-changes
 
   test:
     runs-on: ubuntu-latest
@@ -52,12 +52,6 @@ jobs:
           indicators: true
           output: both
           thresholds: '30 60'
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: code-coverage-results.md
 
       - name: Copy Coverage File
         run: cp Modules/Grading/Tests/TestResults/**/coverage.cobertura.xml coverage.cobertura.xml
