@@ -1,4 +1,6 @@
 ﻿using GradingModule.Application.Commands;
+using GradingModule.Application.Commands.Courses;
+using GradingModule.Application.Dtos;
 
 using MediatR;
 
@@ -11,5 +13,10 @@ namespace GradingModule.API.Http;
 public class GradingController(IMediator mediator) : Controller
 {
     [HttpGet]
-    public Task<string> Hello() => mediator.Send(new HelloCommand());
+    public Task<string> Hello()
+        => mediator.Send(new HelloCommand());
+
+    [HttpGet]
+    public Task<IEnumerable<CourseDto>> Courses([FromHeader] Guid userId)
+        => mediator.Send(new GetCoursesQuery(userId));
 }

@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Domain\GradingModule.Domain.csproj"/>
+        <ProjectReference Include="..\Infrastructure\GradingModule.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>
