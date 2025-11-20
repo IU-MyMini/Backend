@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <Reference Include="..\..\..\deps\BuildingBlocks.Infrastructure.dll"/>
+        <Reference Include="..\..\..\deps\BuildingBlocks.Domain.dll"/>
         <ProjectReference Include="..\Domain\GradingModule.Domain.csproj"/>
     </ItemGroup>
 
