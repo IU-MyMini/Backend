@@ -2,6 +2,7 @@
 using GradingModule.Application.Commands.Assignments;
 using GradingModule.Application.Commands.CourseParticipants;
 using GradingModule.Application.Commands.Courses;
+using GradingModule.Application.Commands.Grades;
 using GradingModule.Application.Commands.Groups;
 using GradingModule.Application.Dtos;
 
@@ -132,6 +133,24 @@ public class GradingController(IMediator mediator) : Controller
                 userId,
                 groupId,
                 courseParticipantId,
+                roles.Contains(AdminRole)
+            )
+        );
+
+    [HttpPut]
+    public Task Grade(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromBody] PutGradeRequest request
+    )
+        => mediator.Send(
+            new PutGradeCommand(
+                userId,
+                request.ComponentId,
+                request.GroupId,
+                request.CourseParticipantId,
+                request.Grade,
+                request.Feedback ?? [],
                 roles.Contains(AdminRole)
             )
         );

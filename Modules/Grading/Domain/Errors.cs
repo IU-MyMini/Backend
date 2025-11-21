@@ -11,7 +11,19 @@ public static class Errors
         public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
     }
 
+    public static class Grade
+    {
+        public static readonly AppError GroupAndParticipantIdsBothNull = new(ErrorCode.BadRequest);
+        public static readonly AppError GroupAndParticipantIdsBothNotNull = new(ErrorCode.BadRequest);
+    }
+
     public static class Assignment
+    {
+        public static readonly AppError NotFound = new(ErrorCode.EntityNotFound);
+        public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
+    }
+
+    public static class AssignmentComponent
     {
         public static readonly AppError NotFound = new(ErrorCode.EntityNotFound);
         public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
