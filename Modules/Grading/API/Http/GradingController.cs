@@ -15,27 +15,35 @@ namespace GradingModule.API.Http;
 [Route("api/[controller]/[action]")]
 public class GradingController(IMediator mediator) : Controller
 {
+    private const string AdminRole = "admin_grading";
+
     [HttpGet]
-    public Task<IEnumerable<CourseDto>> Courses([FromHeader] Guid userId)
-        => mediator.Send(new GetCoursesQuery(userId, true)); // todo: remove admin rights
+    public Task<IEnumerable<CourseDto>> Courses(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles
+    )
+        => mediator.Send(new GetCoursesQuery(userId, roles.Contains(AdminRole)));
 
     [HttpGet]
     public Task<CourseDto> Course(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid courseId
     )
-        => mediator.Send(new GetCourseQuery(userId, courseId, true)); // todo: remove admin rights
+        => mediator.Send(new GetCourseQuery(userId, courseId, roles.Contains(AdminRole)));
 
     [HttpGet]
     public Task<IEnumerable<CourseParticipantDto>> CourseParticipants(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid courseId
     )
-        => mediator.Send(new GetCourseParticipantsQuery(userId, courseId, true)); // todo: remove admin rights
+        => mediator.Send(new GetCourseParticipantsQuery(userId, courseId, roles.Contains(AdminRole)));
 
     [HttpPost]
     public Task<Guid> CourseParticipant(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid targetUserId,
         [FromQuery] Guid courseId
     )
@@ -44,57 +52,62 @@ public class GradingController(IMediator mediator) : Controller
                 userId,
                 targetUserId,
                 courseId,
-                true
+                roles.Contains(AdminRole)
             )
-        ); // todo: remove admin rights
+        );
 
     [HttpDelete]
     public Task CourseParticipant(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid courseParticipantId
     )
-        => mediator.Send(
-            new RemoveCourseParticipantCommand(userId, courseParticipantId, true)
-        ); // todo: remove admin rights
+        => mediator.Send(new RemoveCourseParticipantCommand(userId, courseParticipantId, roles.Contains(AdminRole)));
 
     [HttpGet]
     public Task<IEnumerable<AssignmentShortDto>> Assignments(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid courseId
     )
-        => mediator.Send(new GetAssignmentsQuery(userId, courseId, true)); // todo: remove admin rights
+        => mediator.Send(new GetAssignmentsQuery(userId, courseId, roles.Contains(AdminRole)));
 
     [HttpPost]
     public Task<Guid> ItpdAssignment(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid courseId
     )
-        => mediator.Send(new CreateItpdAssignmentCommand(userId, courseId, true)); // todo: remove admin rights
+        => mediator.Send(new CreateItpdAssignmentCommand(userId, courseId, roles.Contains(AdminRole)));
 
     [HttpGet]
     public Task<IEnumerable<GroupWithGradesDto>> GroupsWithGrades(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid assignmentId
     )
-        => mediator.Send(new GetGroupsWithGradesQuery(userId, assignmentId, true)); // todo: remove admin rights
+        => mediator.Send(new GetGroupsWithGradesQuery(userId, assignmentId, roles.Contains(AdminRole)));
 
     [HttpGet]
     public Task<IEnumerable<GroupWithMembersDto>> Groups(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid courseId
     )
-        => mediator.Send(new GetGroupsQuery(userId, courseId, true)); // todo: remove admin rights
+        => mediator.Send(new GetGroupsQuery(userId, courseId, roles.Contains(AdminRole)));
 
     [HttpPost]
     public Task<Guid> Group(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid groupId
     )
-        => mediator.Send(new CreateGroupCommand(userId, groupId, true)); // todo: remove admin rights
+        => mediator.Send(new CreateGroupCommand(userId, groupId, roles.Contains(AdminRole)));
 
     [HttpPut]
     public Task Group(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromBody] PutGroupRequest request
     )
         => mediator.Send(
@@ -103,13 +116,14 @@ public class GradingController(IMediator mediator) : Controller
                 request.GroupId,
                 request.Name,
                 request.Description,
-                true
+                roles.Contains(AdminRole)
             )
-        ); // todo: remove admin rights
+        );
 
     [HttpPost]
     public Task GroupMember(
         [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
         [FromQuery] Guid groupId,
         [FromQuery] Guid courseParticipantId
     )
@@ -118,7 +132,7 @@ public class GradingController(IMediator mediator) : Controller
                 userId,
                 groupId,
                 courseParticipantId,
-                true
+                roles.Contains(AdminRole)
             )
-        ); // todo: remove admin rights
+        );
 }
