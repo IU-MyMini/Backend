@@ -1,5 +1,6 @@
 ﻿using GradingModule.Application.Dtos;
 using GradingModule.Domain;
+using GradingModule.Domain.Entities;
 using GradingModule.Infrastructure;
 
 using MediatR;
@@ -46,6 +47,7 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context)
                 Members = g.Members.Select(
                         m => new CourseParticipantWithGradesDto
                         {
+                            Id = m.Id,
                             Email = null,
                             FirstName = null,
                             SecondName = null,
@@ -58,19 +60,33 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context)
                                     AssignedGrade = grade.Grade,
                                     MaxGrade = grade.Component.MaxPoints
                                 }
-                            )
+                            ),
+                            TotalGrade = FindTotalGrade(assignment.Components, m.Grades)
                         }
                     )
                     .ToList(),
-                Grades = g.Grades.ToDictionary(
-                    grade => grade.ComponentId,
-                    grade => new GradeDto
+                Grades = assignment.Components.ToDictionary(
+                    c => c.Id,
+                    c => new GradeDto
                     {
-                        AssignedGrade = grade.Grade,
-                        MaxGrade = grade.Component.MaxPoints
+                        AssignedGrade = g.Grades.FirstOrDefault(grade => grade.ComponentId.Equals(c.Id))?.Grade,
+                        MaxGrade = c.MaxPoints
                     }
-                )
+                ),
+                TotalGrade = FindTotalGrade(assignment.Components, g.Grades)
             }
         );
     }
+
+    private static GradeDto FindTotalGrade(
+        ICollection<AssignmentComponent> components,
+        ICollection<ComponentGrade> grades
+    )
+        => new GradeDto
+        {
+            AssignedGrade = components.Sum(
+                c => grades.FirstOrDefault(grade => grade.ComponentId.Equals(c.Id))?.Grade ?? 0
+            ),
+            MaxGrade = components.Sum(c => c.MaxPoints)
+        };
 }

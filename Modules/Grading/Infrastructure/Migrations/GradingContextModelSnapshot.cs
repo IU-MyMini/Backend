@@ -73,7 +73,7 @@ namespace GradingModule.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("uuid[]");
 
-                    b.Property<int?>("MaxPoints")
+                    b.Property<int>("MaxPoints")
                         .HasColumnType("integer");
 
                     b.Property<LangStr>("Name")

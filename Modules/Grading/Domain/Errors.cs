@@ -22,4 +22,17 @@ public static class Errors
         public static readonly AppError NotFound = new(ErrorCode.EntityNotFound);
         public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
     }
+
+    public static class Group
+    {
+        public static readonly AppError NotFound = new(ErrorCode.EntityNotFound);
+        public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
+    }
+
+    public static class CourseParticipant
+    {
+        public static readonly AppError NotFound = new(ErrorCode.EntityNotFound);
+        public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
+        public static readonly AppError AlreadyAdded = new(ErrorCode.BadRequest);
+    }
 }

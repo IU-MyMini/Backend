@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GradingModule.Infrastructure.Migrations
 {
     [DbContext(typeof(GradingContext))]
-    [Migration("20251120121407_Initial")]
+    [Migration("20251121074824_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -76,7 +76,7 @@ namespace GradingModule.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("uuid[]");
 
-                    b.Property<int?>("MaxPoints")
+                    b.Property<int>("MaxPoints")
                         .HasColumnType("integer");
 
                     b.Property<LangStr>("Name")

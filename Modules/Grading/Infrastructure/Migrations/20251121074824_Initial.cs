@@ -119,7 +119,7 @@ namespace GradingModule.Infrastructure.Migrations
                     Name = table.Column<LangStr>(type: "jsonb", nullable: false),
                     Description = table.Column<LangStr>(type: "jsonb", nullable: false),
                     FileIds = table.Column<Guid[]>(type: "uuid[]", nullable: false),
-                    MaxPoints = table.Column<int>(type: "integer", nullable: true),
+                    MaxPoints = table.Column<int>(type: "integer", nullable: false),
                     AssignmentId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>

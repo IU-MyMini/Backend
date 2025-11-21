@@ -11,6 +11,9 @@
         <Reference Include="BuildingBlocks.Domain">
             <HintPath>..\..\..\deps\BuildingBlocks.Domain.dll</HintPath>
         </Reference>
+        <Reference Include="BuildingBlocks.Infrastructure">
+            <HintPath>..\..\..\deps\BuildingBlocks.Infrastructure.dll</HintPath>
+        </Reference>
     </ItemGroup>
     
     <ItemGroup>
