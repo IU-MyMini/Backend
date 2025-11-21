@@ -58,6 +58,7 @@ public class PutGradeCommandHandler(GradingContext context) : IRequestHandler<Pu
                 Id = Guid.NewGuid(),
                 Grade = request.Grade.Value,
                 Feedback = request.Feedback,
+                FileIds = [],
                 GradedAt = DateTime.UtcNow,
                 GradedBy = request.UserId,
                 ComponentId = component.Id,
