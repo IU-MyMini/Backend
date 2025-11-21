@@ -1,3 +1,6 @@
+using ApiClients.OpenApi.Clients.Personal;
+
+using GradingModule.Domain;
 using GradingModule.Domain.Entities;
 using GradingModule.Infrastructure;
 
@@ -18,12 +21,8 @@ public class MustFindUserCommand(Guid userId) : IRequest<User>
     public Guid UserId { get; set; } = userId;
 }
 
-// todo: fix when clients are added
-public class MustFindUserCommandHandler(
-
-    // PersonalClient personalClient,
-    GradingContext context
-) : IRequestHandler<MustFindUserCommand, User>
+public class MustFindUserCommandHandler(PersonalClient personalClient, GradingContext context)
+    : IRequestHandler<MustFindUserCommand, User>
 {
     public async Task<User> Handle(MustFindUserCommand request, CancellationToken cancellationToken)
     {
@@ -31,13 +30,13 @@ public class MustFindUserCommandHandler(
         if (user is not null)
             return user;
 
-        // var foundUsers = await personalClient.Api.Personal.SearchByIds.PostAsync(
-        //     new[] { request.UserId }.Cast<Guid?>().ToList(),
-        //     cancellationToken: cancellationToken
-        // );
-        //
-        // if (foundUsers is null || foundUsers.Count == 0)
-        //     throw Errors.User.NotFound;
+        var foundUsers = await personalClient.Api.Personal.SearchByIds.PostAsync(
+            new[] { request.UserId }.Cast<Guid?>().ToList(),
+            cancellationToken: cancellationToken
+        );
+
+        if (foundUsers is null || foundUsers.Count == 0)
+            throw Errors.User.NotFound;
 
         user = new User { Id = request.UserId };
         await context.AddAsync(user, cancellationToken);
