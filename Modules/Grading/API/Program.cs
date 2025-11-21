@@ -1,10 +1,11 @@
 using System.Text.Json.Serialization;
 
+using ApiClients.OpenApi.Clients.Personal;
+
 using BuildingBlocks.API.Http.Middlewares;
 using BuildingBlocks.Infrastructure.Configuration;
 
 using GradingModule.Application;
-using GradingModule.Application.Commands;
 using GradingModule.Domain;
 using GradingModule.Infrastructure;
 
@@ -16,6 +17,8 @@ builder.AddConfiguration();
 var secrets = builder.Configuration.GetSection("Secrets").Get<Secrets>()!;
 builder.Services.AddSingleton(secrets);
 
+builder.Services.AddClient<PersonalClient>(secrets.ProxyUrl, secrets.ServiceKey);
+
 builder.Services.AddAppDbContext<GradingContext>(secrets.Database.ConnectionString);
 
 builder.Services.AddQuartzScheduler();
@@ -24,7 +27,8 @@ builder.AddSwagger();
 builder.AddLogger();
 
 builder.Services.AddControllers()
-    .AddJsonOptions(opts =>
+    .AddJsonOptions(
+        opts =>
         {
             var enumConverter = new JsonStringEnumConverter();
             opts.JsonSerializerOptions.Converters.Add(enumConverter);

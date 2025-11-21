@@ -17,5 +17,8 @@
         <Reference Include="..\..\..\deps\BuildingBlocks.Domain.dll"/>
         <ProjectReference Include="..\Application\GradingModule.Application.csproj"/>
         <ProjectReference Include="..\Infrastructure\GradingModule.Infrastructure.csproj"/>
+        <Reference Include="ApiClients.OpenApi">
+            <HintPath>..\..\..\deps\ApiClients.OpenApi.dll</HintPath>
+        </Reference>
     </ItemGroup>
 </Project>
