@@ -11,6 +11,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Kiota.Bundle" Version="1.13.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <Reference Include="..\..\..\deps\BuildingBlocks.API.dll"/>
         <Reference Include="..\..\..\deps\BuildingBlocks.Infrastructure.dll"/>
         <Reference Include="..\..\..\deps\BuildingBlocks.Application.dll"/>
