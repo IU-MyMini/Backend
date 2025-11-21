@@ -1,4 +1,8 @@
-﻿using GradingModule.Application.Dtos;
+﻿using ApiClients.OpenApi.Clients.Personal;
+
+using BuildingBlocks.Domain;
+
+using GradingModule.Application.Dtos;
 using GradingModule.Domain;
 using GradingModule.Infrastructure;
 
@@ -11,7 +15,7 @@ namespace GradingModule.Application.Commands.CourseParticipants;
 public record GetCourseParticipantsQuery(Guid UserId, Guid CourseId, bool IsAdmin)
     : IRequest<IEnumerable<CourseParticipantDto>>;
 
-public class GetCourseParticipantsQueryHandler(GradingContext context)
+public class GetCourseParticipantsQueryHandler(GradingContext context, PersonalClient personalClient)
     : IRequestHandler<GetCourseParticipantsQuery, IEnumerable<CourseParticipantDto>>
 {
     public async Task<IEnumerable<CourseParticipantDto>> Handle(
@@ -29,16 +33,24 @@ public class GetCourseParticipantsQueryHandler(GradingContext context)
             && !course.CourseParticipants.Any(p => p.UserId.Equals(request.UserId)))
             throw Errors.Course.NotAllowed;
 
-        // todo: get personal data from personal
+        var userIds = course.CourseParticipants.Select(p => p.UserId).Cast<Guid?>().ToList();
+        var personalUsers = await personalClient.Api.Personal.SearchByIds.PostAsync(
+                                userIds,
+                                cancellationToken: cancellationToken
+                            )
+                            ?? throw Errors.User.NotFound;
+
+        var userMap = personalUsers.ToDictionary(u => u.UserId!.Value);
+
         return course.CourseParticipants.Select(
             p => new CourseParticipantDto
             {
                 Id = p.Id,
-                Email = null,
-                FirstName = null,
-                SecondName = null,
-                Patronymic = null,
-                TelegramAlias = null
+                Email = userMap.GetValueOrDefault(p.UserId)?.Email!,
+                FirstName = LangStr.FromKiota(userMap.GetValueOrDefault(p.UserId)?.FirstName?.AdditionalData),
+                SecondName = LangStr.FromKiota(userMap.GetValueOrDefault(p.UserId)?.SecondName?.AdditionalData),
+                Patronymic = LangStr.FromKiota(userMap.GetValueOrDefault(p.UserId)?.Patronymic?.AdditionalData),
+                TelegramAlias = userMap.GetValueOrDefault(p.UserId)?.TelegramAlias,
             }
         );
     }

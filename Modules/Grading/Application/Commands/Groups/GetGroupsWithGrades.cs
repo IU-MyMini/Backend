@@ -1,4 +1,8 @@
-﻿using GradingModule.Application.Dtos;
+﻿using ApiClients.OpenApi.Clients.Personal;
+
+using BuildingBlocks.Domain;
+
+using GradingModule.Application.Dtos;
 using GradingModule.Domain;
 using GradingModule.Domain.Entities;
 using GradingModule.Infrastructure;
@@ -12,7 +16,7 @@ namespace GradingModule.Application.Commands.Groups;
 public record GetGroupsWithGradesQuery(Guid UserId, Guid AssignmentId, bool IsAdmin)
     : IRequest<IEnumerable<GroupWithGradesDto>>;
 
-public class GetGroupsWithGradesQueryHandler(GradingContext context)
+public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalClient personalClient)
     : IRequestHandler<GetGroupsWithGradesQuery, IEnumerable<GroupWithGradesDto>>
 {
     public async Task<IEnumerable<GroupWithGradesDto>> Handle(
@@ -40,7 +44,15 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context)
         if (!request.IsAdmin && !assignment.Course.Teachers.Any(t => t.UserId.Equals(request.UserId)))
             throw Errors.Assignment.NotAllowed;
 
-        // todo: load user info (add apiClients first)
+        var userIds = assignment.Course.Groups.SelectMany(g => g.Members).Select(p => p.UserId).Cast<Guid?>().ToList();
+        var personalUsers = await personalClient.Api.Personal.SearchByIds.PostAsync(
+                                userIds,
+                                cancellationToken: cancellationToken
+                            )
+                            ?? throw Errors.User.NotFound;
+
+        var userMap = personalUsers.ToDictionary(u => u.UserId!.Value);
+
         return assignment.Course.Groups.Select(
             g => new GroupWithGradesDto(g)
             {
@@ -48,31 +60,23 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context)
                         m => new CourseParticipantWithGradesDto
                         {
                             Id = m.Id,
-                            Email = null,
-                            FirstName = null,
-                            SecondName = null,
-                            Patronymic = null,
-                            TelegramAlias = null,
-                            Grades = m.Grades.ToDictionary(
-                                grade => grade.ComponentId,
-                                grade => new GradeDto
-                                {
-                                    AssignedGrade = grade.Grade,
-                                    MaxGrade = grade.Component.MaxPoints
-                                }
+                            Email = userMap.GetValueOrDefault(m.UserId)?.Email!,
+                            FirstName = LangStr.FromKiota(
+                                userMap.GetValueOrDefault(m.UserId)?.FirstName?.AdditionalData
                             ),
+                            SecondName = LangStr.FromKiota(
+                                userMap.GetValueOrDefault(m.UserId)?.SecondName?.AdditionalData
+                            ),
+                            Patronymic = LangStr.FromKiota(
+                                userMap.GetValueOrDefault(m.UserId)?.Patronymic?.AdditionalData
+                            ),
+                            TelegramAlias = userMap.GetValueOrDefault(m.UserId)?.TelegramAlias,
+                            Grades = ToGradeDtos(assignment.Components, m.Grades),
                             TotalGrade = FindTotalGrade(assignment.Components, m.Grades)
                         }
                     )
                     .ToList(),
-                Grades = assignment.Components.ToDictionary(
-                    c => c.Id,
-                    c => new GradeDto
-                    {
-                        AssignedGrade = g.Grades.FirstOrDefault(grade => grade.ComponentId.Equals(c.Id))?.Grade,
-                        MaxGrade = c.MaxPoints
-                    }
-                ),
+                Grades = ToGradeDtos(assignment.Components, g.Grades),
                 TotalGrade = FindTotalGrade(assignment.Components, g.Grades)
             }
         );
@@ -89,4 +93,17 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context)
             ),
             MaxGrade = components.Sum(c => c.MaxPoints)
         };
+
+    private static Dictionary<Guid, GradeDto> ToGradeDtos(
+        ICollection<AssignmentComponent> components,
+        ICollection<ComponentGrade> grades
+    )
+        => components.ToDictionary(
+            c => c.Id,
+            c => new GradeDto
+            {
+                AssignedGrade = grades.FirstOrDefault(grade => grade.ComponentId.Equals(c.Id))?.Grade,
+                MaxGrade = c.MaxPoints
+            }
+        );
 }

@@ -20,6 +20,13 @@ public class GradingController(IMediator mediator) : Controller
         => mediator.Send(new GetCoursesQuery(userId, true)); // todo: remove admin rights
 
     [HttpGet]
+    public Task<CourseDto> Course(
+        [FromHeader] Guid userId,
+        [FromQuery] Guid courseId
+    )
+        => mediator.Send(new GetCourseQuery(userId, courseId, true)); // todo: remove admin rights
+
+    [HttpGet]
     public Task<IEnumerable<CourseParticipantDto>> CourseParticipants(
         [FromHeader] Guid userId,
         [FromQuery] Guid courseId
