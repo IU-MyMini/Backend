@@ -25,5 +25,5 @@ public class ComponentShortDto(AssignmentComponent c)
     public LangStr Name { get; set; } = c.Name;
     public LangStr Description { get; set; } = c.Description;
     public IEnumerable<Guid> FileIds { get; set; } = c.FileIds;
-    public int? MaxPoints { get; set; } = c.MaxPoints;
+    public int MaxPoints { get; set; } = c.MaxPoints;
 }
