@@ -6,7 +6,7 @@ namespace GradingModule.Application.Dtos;
 
 public class StudentGradesDto
 {
-    public int Total { get; set; }
+    public GradeDto Total { get; set; } = default!;
 
     public ICollection<AssignmentWithGradesDto> Assignments { get; set; } = default!;
 }
