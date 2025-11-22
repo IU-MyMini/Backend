@@ -6,7 +6,7 @@ public class Group : Entity<Guid>
 {
     public LangStr Name { get; set; } = default!;
     public LangStr? Description { get; set; }
-    public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; } = true; // todo: probably remove and make it soft-deletable
 
     public Guid CourseId { get; set; }
     public Course Course { get; set; } = default!;

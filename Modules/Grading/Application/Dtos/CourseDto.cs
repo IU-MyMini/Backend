@@ -2,7 +2,7 @@
 
 using GradingModule.Domain.Entities;
 
-namespace GradingModule.Application.Commands.Courses;
+namespace GradingModule.Application.Dtos;
 
 public class CourseDto(Course c, Guid userId)
 {

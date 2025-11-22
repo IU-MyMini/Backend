@@ -6,7 +6,7 @@ public class Assignment : Entity<Guid>
 {
     public LangStr Name { get; set; } = default!;
     public LangStr Description { get; set; } = default!;
-    public IEnumerable<Guid> FileIds { get; set; } = default!;
+    public IList<Guid> FileIds { get; set; } = default!;
 
     public DateTime? Deadline { get; set; }
     public bool IsGroupAssignment { get; set; }

@@ -6,8 +6,8 @@ public class AssignmentComponent : Entity<Guid>
 {
     public LangStr Name { get; set; } = default!;
     public LangStr Description { get; set; } = default!;
-    public IEnumerable<Guid> FileIds { get; set; } = default!;
-    public int? MaxPoints { get; set; }
+    public IList<Guid> FileIds { get; set; } = default!;
+    public int MaxPoints { get; set; }
 
     public Guid AssignmentId { get; set; }
     public Assignment Assignment { get; set; } = default!;

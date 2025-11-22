@@ -8,8 +8,14 @@
 
     <ItemGroup>
         <Reference Include="..\..\..\deps\BuildingBlocks.Application.dll"/>
+        <Reference Include="ApiClients.OpenApi">
+            <HintPath>..\..\..\deps\ApiClients.OpenApi.dll</HintPath>
+        </Reference>
         <Reference Include="BuildingBlocks.Domain">
             <HintPath>..\..\..\deps\BuildingBlocks.Domain.dll</HintPath>
+        </Reference>
+        <Reference Include="BuildingBlocks.Infrastructure">
+            <HintPath>..\..\..\deps\BuildingBlocks.Infrastructure.dll</HintPath>
         </Reference>
     </ItemGroup>
     
@@ -19,6 +25,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Domain\GradingModule.Domain.csproj"/>
+        <ProjectReference Include="..\Infrastructure\GradingModule.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>
