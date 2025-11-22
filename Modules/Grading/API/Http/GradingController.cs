@@ -154,4 +154,11 @@ public class GradingController(IMediator mediator) : Controller
                 roles.Contains(AdminRole)
             )
         );
+
+    [HttpGet]
+    public Task<StudentGradesDto> StudentGrades(
+        [FromHeader] Guid userId,
+        [FromQuery] Guid courseId
+    )
+        => mediator.Send(new GetStudentGradesQuery(userId, courseId, false));
 }

@@ -32,6 +32,9 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                          .SingleOrDefaultAsync(c => c.Id.Equals(request.CourseId), cancellationToken)
                      ?? throw Errors.Course.NotFound;
 
+        if (!request.IsAdmin && !course.CourseParticipants.Any(p => p.UserId.Equals(request.UserId)))
+            throw Errors.Course.NotAllowed;
+
         var dto = new StudentGradesDto
         {
             Assignments = course.Assignments.Select(
