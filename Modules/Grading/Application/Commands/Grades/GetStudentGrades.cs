@@ -56,15 +56,15 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                                         },
                                         IndividualGrade = new GradeDto
                                         {
-                                            AssignedGrade =
-
-                                                // -126
-                                                c.Grades.FirstOrDefault(
-                                                        g => g.CourseParticipantId.Equals(participant.Id)
-                                                    )
-                                                    ?.Grade
-                                                ?? c.Grades.FirstOrDefault(g => g.GroupId.Equals(participant.GroupId))
-                                                    ?.Grade,
+                                            AssignedGrade
+                                                = c.Grades.FirstOrDefault(
+                                                          g => g.CourseParticipantId.Equals(participant.Id)
+                                                      )
+                                                      ?.Grade
+                                                  ?? c.Grades.FirstOrDefault(
+                                                          g => g.GroupId.Equals(participant.GroupId)
+                                                      )
+                                                      ?.Grade,
                                             MaxGrade = c.MaxPoints
                                         }
                                     }

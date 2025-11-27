@@ -72,7 +72,7 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalCli
                             ),
                             TelegramAlias = userMap.GetValueOrDefault(m.UserId)?.TelegramAlias,
                             Grades = ToGradeDtos(assignment.Components, m.Grades),
-                            TotalGrade = FindTotalGrade(assignment.Components, m.Grades)
+                            TotalGrade = FindTotalGrade(assignment.Components, m.Grades, g.Grades)
                         }
                     )
                     .ToList(),
@@ -84,12 +84,14 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalCli
 
     private static GradeDto FindTotalGrade(
         ICollection<AssignmentComponent> components,
-        ICollection<ComponentGrade> grades
+        ICollection<ComponentGrade> grades,
+        ICollection<ComponentGrade>? alternativeGrades = null
     )
         => new GradeDto
         {
             AssignedGrade = components.Sum(
-                c => grades.FirstOrDefault(grade => grade.ComponentId.Equals(c.Id))?.Grade ?? 0
+                c => grades.FirstOrDefault(grade => grade.ComponentId.Equals(c.Id))?.Grade
+                     ?? alternativeGrades?.FirstOrDefault(grade => grade.ComponentId.Equals(c.Id))?.Grade ?? 0
             ),
             MaxGrade = components.Sum(c => c.MaxPoints)
         };
