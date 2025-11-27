@@ -25,8 +25,10 @@ public class GetStudentGradesQueryHandler(GradingContext context)
         var course = await context.Courses.Include(c => c.Assignments)
                          .ThenInclude(a => a.Components)
                          .ThenInclude(
-                             c => c.Grades.Where(g => g.CourseParticipantId.Equals(participant.Id))
-                                 .Where(g => g.GroupId.Equals(participant.GroupId))
+                             c => c.Grades.Where(
+                                 g => g.CourseParticipantId.Equals(participant.Id)
+                                      || g.GroupId.Equals(participant.GroupId)
+                             )
                          )
                          .Include(course => course.CourseParticipants)
                          .SingleOrDefaultAsync(c => c.Id.Equals(request.CourseId), cancellationToken)
@@ -54,15 +56,15 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                                         },
                                         IndividualGrade = new GradeDto
                                         {
-                                            AssignedGrade
-                                                = c.Grades.FirstOrDefault(
-                                                          g => g.CourseParticipantId.Equals(participant.Id)
-                                                      )
-                                                      ?.Grade
-                                                  ?? c.Grades.FirstOrDefault(
-                                                          g => g.GroupId.Equals(participant.GroupId)
-                                                      )
-                                                      ?.Grade,
+                                            AssignedGrade =
+
+                                                // -126
+                                                c.Grades.FirstOrDefault(
+                                                        g => g.CourseParticipantId.Equals(participant.Id)
+                                                    )
+                                                    ?.Grade
+                                                ?? c.Grades.FirstOrDefault(g => g.GroupId.Equals(participant.GroupId))
+                                                    ?.Grade,
                                             MaxGrade = c.MaxPoints
                                         }
                                     }
