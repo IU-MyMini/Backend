@@ -8,6 +8,7 @@ public class Assignment : Entity<Guid>
     public LangStr Description { get; set; } = default!;
     public IList<Guid> FileIds { get; set; } = default!;
 
+    public DateTime CreatedAt { get; set; }
     public DateTime? Deadline { get; set; }
     public bool IsGroupAssignment { get; set; }
 

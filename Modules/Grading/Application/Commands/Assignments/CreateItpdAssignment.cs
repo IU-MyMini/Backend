@@ -35,6 +35,7 @@ public class CreateItpdAssignmentCommandHandler(GradingContext context)
             Name = new LangStr($"Assignment {assignmentNum}"),
             Description = [],
             FileIds = [],
+            CreatedAt = DateTime.UtcNow,
             Deadline = null,
             IsGroupAssignment = true,
             CourseId = request.CourseId,

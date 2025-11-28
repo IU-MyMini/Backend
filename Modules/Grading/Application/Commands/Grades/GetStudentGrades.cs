@@ -39,7 +39,9 @@ public class GetStudentGradesQueryHandler(GradingContext context)
 
         var dto = new StudentGradesDto
         {
-            Assignments = course.Assignments.Select(
+            Assignments = course.Assignments.OrderByDescending(a => a.Deadline)
+                .ThenByDescending(a => a.CreatedAt)
+                .Select(
                     a =>
                     {
                         var dto = new AssignmentWithGradesDto(a)

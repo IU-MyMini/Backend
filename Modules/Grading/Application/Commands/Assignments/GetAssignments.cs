@@ -30,6 +30,8 @@ public class GetAssignmentsQueryHandler(GradingContext context)
             && !course.CourseParticipants.Any(p => p.UserId.Equals(request.UserId)))
             throw Errors.Course.NotAllowed;
 
-        return course.Assignments.Select(a => new AssignmentShortDto(a));
+        return course.Assignments.OrderByDescending(a => a.Deadline)
+            .ThenByDescending(a => a.CreatedAt)
+            .Select(a => new AssignmentShortDto(a));
     }
 }
