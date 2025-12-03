@@ -11,8 +11,10 @@ public class Submission : Entity<Guid>
     public AssignmentComponent Component { get; set; } = default!;
     public List<Guid> FileIds { get; set; } = default!;
 
-    public Guid? SubmittedByUserId { get; set; }
+    public Guid? SubmittedByParticipantId { get; set; }
+    public CourseParticipant? SubmittedByParticipant { get; set; }
     public Guid? SubmittedByGroupId { get; set; }
+    public Group? SubmittedByGroup { get; set; }
 
     public ICollection<PeerReview> ReceivedPeerReviews { get; set; } = default!;
 }
