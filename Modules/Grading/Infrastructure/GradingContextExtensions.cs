@@ -77,4 +77,45 @@ public static class GradingContextExtensions
                                             ?? throw Errors.Submission.NotFound,
             _ => throw new ArgumentOutOfRangeException(nameof(courseEntityType))
         };
+
+    public static async Task<string> GetComponentNameAsync(
+        this GradingContext context,
+        ECourseEntityType courseEntityType,
+        Guid courseEntityId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var entityName = courseEntityType switch
+        {
+            ECourseEntityType.Assignment => await context.Assignments.Where(a => a.Id.Equals(courseEntityId))
+                                                .Select(a => a.Name)
+                                                .SingleOrDefaultAsync(cancellationToken)
+                                            ?? throw Errors.Assignment.NotFound,
+            ECourseEntityType.AssignmentComponent => await context.AssignmentComponents
+                                                         .Where(c => c.Id.Equals(courseEntityId))
+                                                         .Select(c => c.Name)
+                                                         .SingleOrDefaultAsync(cancellationToken)
+                                                     ?? throw Errors.AssignmentComponent.NotFound,
+            ECourseEntityType.ComponentGrade => await context.ComponentGrades.Where(g => g.Id.Equals(courseEntityId))
+                                                    .Select(g => g.Component.Name)
+                                                    .SingleOrDefaultAsync(cancellationToken)
+                                                ?? throw Errors.Grade.NotFound,
+            ECourseEntityType.Submission => await context.Submissions.Where(s => s.Id.Equals(courseEntityId))
+                                                .Select(s => s.Component.Name)
+                                                .SingleOrDefaultAsync(cancellationToken)
+                                            ?? throw Errors.Submission.NotFound,
+            _ => throw new ArgumentOutOfRangeException(nameof(courseEntityType), courseEntityType, null)
+        };
+
+        var entityNameEn = entityName.Translate();
+
+        return courseEntityType switch
+        {
+            ECourseEntityType.Assignment => entityNameEn ?? nameof(ECourseEntityType.Assignment),
+            ECourseEntityType.AssignmentComponent => entityNameEn ?? nameof(ECourseEntityType.AssignmentComponent),
+            ECourseEntityType.ComponentGrade => entityNameEn + "Feedback",
+            ECourseEntityType.Submission => entityNameEn + "Submission",
+            _ => throw new ArgumentOutOfRangeException(nameof(courseEntityType), courseEntityType, null)
+        };
+    }
 }

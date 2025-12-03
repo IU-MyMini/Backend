@@ -17,6 +17,26 @@ public class FilesController(IMediator mediator) : Controller
 
     #region Assignment
     [HttpGet]
+    [Route("/api/Grading/Assignment/Files")]
+    public async Task<FileStreamResult> AssignmentFiles(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromQuery] Guid assignmentId
+    )
+    {
+        var file = await mediator.Send(
+            new DownloadFilesQuery(
+                userId,
+                ECourseEntityType.Assignment,
+                assignmentId,
+                roles.Contains(AdminRole)
+            )
+        );
+
+        return new FileStreamResult(file.Stream, file.ContentType) { FileDownloadName = file.FileName };
+    }
+
+    [HttpGet]
     [Route("/api/Grading/Assignment/File")]
     public async Task<FileStreamResult> AssignmentFile(
         [FromHeader] Guid userId,
@@ -84,6 +104,26 @@ public class FilesController(IMediator mediator) : Controller
     #endregion
 
     #region AssignmentComponent
+    [HttpGet]
+    [Route("/api/Grading/AssignmentComponent/Files")]
+    public async Task<FileStreamResult> AssignmentComponentFiles(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromQuery] Guid assignmentComponentId
+    )
+    {
+        var file = await mediator.Send(
+            new DownloadFilesQuery(
+                userId,
+                ECourseEntityType.AssignmentComponent,
+                assignmentComponentId,
+                roles.Contains(AdminRole)
+            )
+        );
+
+        return new FileStreamResult(file.Stream, file.ContentType) { FileDownloadName = file.FileName };
+    }
+
     [HttpGet]
     [Route("/api/Grading/AssignmentComponent/File")]
     public async Task<FileStreamResult> AssignmentComponentFile(
@@ -153,6 +193,26 @@ public class FilesController(IMediator mediator) : Controller
 
     #region ComponentGrade
     [HttpGet]
+    [Route("/api/Grading/ComponentGrade/Files")]
+    public async Task<FileStreamResult> ComponentGradeFiles(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromQuery] Guid componentGradeId
+    )
+    {
+        var file = await mediator.Send(
+            new DownloadFilesQuery(
+                userId,
+                ECourseEntityType.ComponentGrade,
+                componentGradeId,
+                roles.Contains(AdminRole)
+            )
+        );
+
+        return new FileStreamResult(file.Stream, file.ContentType) { FileDownloadName = file.FileName };
+    }
+
+    [HttpGet]
     [Route("/api/Grading/ComponentGrade/File")]
     public async Task<FileStreamResult> ComponentGradeFile(
         [FromHeader] Guid userId,
@@ -220,6 +280,26 @@ public class FilesController(IMediator mediator) : Controller
     #endregion
 
     #region Submission
+    [HttpGet]
+    [Route("/api/Grading/Submission/Files")]
+    public async Task<FileStreamResult> SubmissionFiles(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromQuery] Guid submissionId
+    )
+    {
+        var file = await mediator.Send(
+            new DownloadFilesQuery(
+                userId,
+                ECourseEntityType.Submission,
+                submissionId,
+                roles.Contains(AdminRole)
+            )
+        );
+
+        return new FileStreamResult(file.Stream, file.ContentType) { FileDownloadName = file.FileName };
+    }
+
     [HttpGet]
     [Route("/api/Grading/Submission/File")]
     public async Task<FileStreamResult> SubmissionFile(
