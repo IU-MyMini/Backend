@@ -77,6 +77,15 @@ public class CreateItpdAssignmentCommandHandler(GradingContext context)
                     MaxPoints = 100,
                     AssignmentId = assignmentId,
                 },
+                new AssignmentComponent
+                {
+                    Id = Guid.NewGuid(),
+                    Name = new LangStr("~Extra"),
+                    Description = [],
+                    FileIds = [],
+                    MaxPoints = 0,
+                    AssignmentId = assignmentId,
+                },
             ]
         };
 
