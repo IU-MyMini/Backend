@@ -65,7 +65,7 @@ public class GradingContext(DbContextOptions options) : AppDbContext(options)
 
         modelBuilder.Entity<Group>()
                     .HasMany(g => g.Submissions)
-                    .WithOne();
+                    .WithOne(s => s.SubmittedByGroup);
 
         modelBuilder.Entity<Group>()
                     .HasMany(g => g.AuthoredPeerReviews)
@@ -77,7 +77,7 @@ public class GradingContext(DbContextOptions options) : AppDbContext(options)
 
         modelBuilder.Entity<CourseParticipant>()
                     .HasMany(p => p.Submissions)
-                    .WithOne();
+                    .WithOne(s => s.SubmittedByParticipant);
 
         modelBuilder.Entity<CourseParticipant>()
                     .HasOne<User>()

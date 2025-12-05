@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 
+using ApiClients.OpenApi.Clients.FileNamespace;
 using ApiClients.OpenApi.Clients.Personal;
 
 using BuildingBlocks.API.Http.Middlewares;
@@ -17,6 +18,7 @@ builder.AddConfiguration();
 var secrets = builder.Configuration.GetSection("Secrets").Get<Secrets>()!;
 builder.Services.AddSingleton(secrets);
 
+builder.Services.AddClient<FileClient>(secrets.ProxyUrl, secrets.ServiceKey);
 builder.Services.AddClient<PersonalClient>(secrets.ProxyUrl, secrets.ServiceKey);
 
 builder.Services.AddAppDbContext<GradingContext>(secrets.Database.ConnectionString);
