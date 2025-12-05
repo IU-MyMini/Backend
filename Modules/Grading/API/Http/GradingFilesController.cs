@@ -11,7 +11,7 @@ namespace GradingModule.API.Http;
 
 [ApiController]
 [Route("api/Grading/[action]")]
-public class FilesController(IMediator mediator) : Controller
+public class GradingFilesController(IMediator mediator) : Controller
 {
     private const string AdminRole = "admin_grading";
 
