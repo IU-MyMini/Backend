@@ -46,7 +46,8 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                     {
                         var dto = new AssignmentWithGradesDto(a)
                         {
-                            Components = a.Components.Select(
+                            Components = a.Components.OrderBy(c => c.Name.Translate() ?? "")
+                                .Select(
                                     c => new ComponentWithGradeDto(c)
                                     {
                                         GroupGrade = new GradeDto
