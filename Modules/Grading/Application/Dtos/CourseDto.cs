@@ -15,4 +15,5 @@ public class CourseDto(Course c, Guid userId)
     public DateTime EndsAt { get; set; } = c.EndsAt;
 
     public ETeacherRole? TeacherRole { get; set; } = c.Teachers.SingleOrDefault(t => t.UserId.Equals(userId))?.Role;
+    public bool IsParticipant { get; set; } = c.CourseParticipants.Any(p => p.UserId.Equals(userId));
 }

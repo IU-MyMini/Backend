@@ -21,6 +21,7 @@ public class GetCoursesQueryHandler(GradingContext context) : IRequestHandler<Ge
                      || c.Teachers.Any(t => t.UserId.Equals(request.UserId))
             )
             .Include(c => c.Teachers)
+            .Include(c => c.CourseParticipants)
             .ToListAsync(cancellationToken);
 
         return courses.Select(c => new CourseDto(c, request.UserId));
