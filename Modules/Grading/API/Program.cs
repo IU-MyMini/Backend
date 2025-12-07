@@ -52,5 +52,6 @@ app.MapControllers();
 app.UseRouting();
 app.UseExceptionHandler();
 app.AddSwagger();
+app.AddMetrics();
 
 app.Run();
