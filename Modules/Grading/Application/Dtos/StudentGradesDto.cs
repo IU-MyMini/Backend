@@ -31,4 +31,6 @@ public class ComponentWithGradeDto(AssignmentComponent c) : ComponentShortDto(c)
 {
     public GradeDto? GroupGrade { get; set; }
     public GradeDto IndividualGrade { get; set; } = default!;
+
+    public SubmissionDto? Submission { get; set; }
 }

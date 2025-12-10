@@ -31,6 +31,14 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                              )
                          )
                          .Include(course => course.CourseParticipants)
+                         .Include(c => c.Assignments)
+                         .ThenInclude(a => a.Components)
+                         .ThenInclude(
+                             c => c.Submissions.Where(
+                                 s => s.SubmittedByParticipantId.Equals(participant.Id)
+                                      || s.SubmittedByGroupId.Equals(participant.GroupId)
+                             )
+                         )
                          .SingleOrDefaultAsync(c => c.Id.Equals(request.CourseId), cancellationToken)
                      ?? throw Errors.Course.NotFound;
 
@@ -50,13 +58,14 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                                 .Select(
                                     c => new ComponentWithGradeDto(c)
                                     {
-                                        GroupGrade = new GradeDto
-                                        {
-                                            AssignedGrade = c.Grades
-                                                .FirstOrDefault(g => g.GroupId.Equals(participant.GroupId))
-                                                ?.Grade,
-                                            MaxGrade = c.MaxPoints
-                                        },
+                                        GroupGrade
+                                            = new GradeDto
+                                            {
+                                                AssignedGrade = c.Grades
+                                                    .FirstOrDefault(g => g.GroupId.Equals(participant.GroupId))
+                                                    ?.Grade,
+                                                MaxGrade = c.MaxPoints
+                                            },
                                         IndividualGrade = new GradeDto
                                         {
                                             AssignedGrade
@@ -69,7 +78,10 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                                                       )
                                                       ?.Grade,
                                             MaxGrade = c.MaxPoints
-                                        }
+                                        },
+                                        Submission = c.Submissions.Count > 0
+                                            ? new SubmissionDto(c.Submissions.First())
+                                            : null
                                     }
                                 )
                                 .ToList()

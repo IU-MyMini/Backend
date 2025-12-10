@@ -1,6 +1,7 @@
 ﻿using FileTypeChecker.Web.Attributes;
 
 using GradingModule.Application.Commands.Files;
+using GradingModule.Application.Commands.Files.Submissions;
 using GradingModule.Domain.Entities;
 
 using MediatR;
@@ -329,16 +330,15 @@ public class GradingFilesController(IMediator mediator) : Controller
         [FromHeader] Guid userId,
         [FromHeader] string[] roles,
         [AllowedTypes("pdf")] IFormFile file,
-        [FromForm] Guid submissionId,
+        [FromForm] Guid assignmentComponentId,
         [FromForm] Guid? existingFileId
     )
     {
         await using var fileStream = file.OpenReadStream();
         return await mediator.Send(
-            new UploadFileCommand(
+            new UploadSubmissionFileCommand(
                 userId,
-                ECourseEntityType.Submission,
-                submissionId,
+                assignmentComponentId,
                 existingFileId,
                 file.FileName,
                 file.ContentType,

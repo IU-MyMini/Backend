@@ -38,6 +38,11 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalCli
                              .Include(a => a.Components)
                              .Include(assignment => assignment.Course)
                              .ThenInclude(course => course.Teachers)
+                             .Include(a => a.Course)
+                             .ThenInclude(c => c.Groups)
+                             .ThenInclude(
+                                 g => g.Submissions.Where(s => s.Component.AssignmentId.Equals(request.AssignmentId))
+                             )
                              .SingleOrDefaultAsync(a => a.Id.Equals(request.AssignmentId), cancellationToken)
                          ?? throw Errors.Assignment.NotFound;
 
@@ -77,7 +82,8 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalCli
                     )
                     .ToList(),
                 Grades = ToGradeDtos(assignment.Components, g.Grades),
-                TotalGrade = FindTotalGrade(assignment.Components, g.Grades)
+                TotalGrade = FindTotalGrade(assignment.Components, g.Grades),
+                Submissions = g.Submissions.ToDictionary(s => s.ComponentId, s => new SubmissionDto(s))
             }
         );
     }

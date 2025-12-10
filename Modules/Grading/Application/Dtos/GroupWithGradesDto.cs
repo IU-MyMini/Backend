@@ -9,4 +9,6 @@ public class GroupWithGradesDto(Group g) : GroupShortDto(g)
     public Dictionary<Guid, GradeDto> Grades { get; set; } = default!; // mapping from component id to grade
 
     public GradeDto TotalGrade { get; set; } = default!;
+
+    public Dictionary<Guid, SubmissionDto> Submissions { get; set; } = default!; // mapping from component id to submission
 }
