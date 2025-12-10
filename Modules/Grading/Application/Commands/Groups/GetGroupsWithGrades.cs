@@ -1,5 +1,7 @@
-﻿using ApiClients.OpenApi.Clients.Personal;
+﻿using ApiClients.OpenApi.Clients.FileNamespace;
+using ApiClients.OpenApi.Clients.Personal;
 
+using BuildingBlocks.Application.File.Download;
 using BuildingBlocks.Domain;
 
 using GradingModule.Application.Dtos;
@@ -16,8 +18,11 @@ namespace GradingModule.Application.Commands.Groups;
 public record GetGroupsWithGradesQuery(Guid UserId, Guid AssignmentId, bool IsAdmin)
     : IRequest<IEnumerable<GroupWithGradesDto>>;
 
-public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalClient personalClient)
-    : IRequestHandler<GetGroupsWithGradesQuery, IEnumerable<GroupWithGradesDto>>
+public class GetGroupsWithGradesQueryHandler(
+    GradingContext context,
+    PersonalClient personalClient,
+    FileClient fileClient
+) : IRequestHandler<GetGroupsWithGradesQuery, IEnumerable<GroupWithGradesDto>>
 {
     public async Task<IEnumerable<GroupWithGradesDto>> Handle(
         GetGroupsWithGradesQuery request,
@@ -58,6 +63,26 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalCli
 
         var userMap = personalUsers.ToDictionary(u => u.UserId!.Value);
 
+        var files = (await fileClient.Api.File.FileInfos.GetAsync(
+            rc =>
+            {
+                rc.QueryParameters.FileIds = assignment.Course.Groups
+                    .SelectMany(g => g.Submissions.SelectMany(s => s.FileIds))
+                    .Cast<Guid?>()
+                    .ToArray();
+            },
+            cancellationToken
+        ))!.ToDictionary(
+            f => f.Id!.Value,
+            f => new FileInfoDto
+            {
+                Id = f.Id!.Value,
+                FileName = f.FileName!,
+                ContentType = f.ContentType!,
+                CreatedAt = f.CreatedAt!.Value.DateTime
+            }
+        );
+
         return assignment.Course.Groups.Select(
             g => new GroupWithGradesDto(g)
             {
@@ -83,7 +108,10 @@ public class GetGroupsWithGradesQueryHandler(GradingContext context, PersonalCli
                     .ToList(),
                 Grades = ToGradeDtos(assignment.Components, g.Grades),
                 TotalGrade = FindTotalGrade(assignment.Components, g.Grades),
-                Submissions = g.Submissions.ToDictionary(s => s.ComponentId, s => new SubmissionDto(s))
+                Submissions = g.Submissions.ToDictionary(
+                    s => s.ComponentId,
+                    s => new SubmissionDto(s) { Files = s.FileIds.Select(id => files[id]).ToList() }
+                )
             }
         );
     }

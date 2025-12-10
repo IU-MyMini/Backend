@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.File.Download;
 using BuildingBlocks.Domain;
 
 using GradingModule.Domain.Entities;
@@ -11,5 +12,5 @@ public class SubmissionDto(Submission s)
     public DateTime SubmittedAt { get; set; } = s.SubmittedAt;
     public LangStr? Text { get; set; } = s.Text;
 
-    public List<Guid> FileIds { get; set; } = s.FileIds;
+    public List<FileInfoDto> Files { get; set; } = [];
 }
