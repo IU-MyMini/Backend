@@ -10,7 +10,7 @@ namespace GradingModule.Application.Commands.Assignments;
 
 public record GetAssignmentsQuery(Guid UserId, Guid CourseId, bool IsAdmin) : IRequest<IEnumerable<AssignmentShortDto>>;
 
-public class GetAssignmentsQueryHandler(GradingContext context)
+public class GetAssignmentsQueryHandler(GradingContext context, IMediator mediator)
     : IRequestHandler<GetAssignmentsQuery, IEnumerable<AssignmentShortDto>>
 {
     public async Task<IEnumerable<AssignmentShortDto>> Handle(
@@ -30,8 +30,6 @@ public class GetAssignmentsQueryHandler(GradingContext context)
             && !course.CourseParticipants.Any(p => p.UserId.Equals(request.UserId)))
             throw Errors.Course.NotAllowed;
 
-        return course.Assignments.OrderByDescending(a => a.Deadline)
-            .ThenByDescending(a => a.CreatedAt)
-            .Select(a => new AssignmentShortDto(a));
+        return await mediator.Send(new MapAssignmentsToShortDtoQuery(course.Assignments), cancellationToken);
     }
 }

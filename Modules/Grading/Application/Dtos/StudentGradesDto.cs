@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.File.Download;
 using BuildingBlocks.Domain;
 
 using GradingModule.Domain.Entities;
@@ -17,7 +18,7 @@ public class AssignmentWithGradesDto(Assignment a)
 
     public LangStr Name { get; set; } = a.Name;
     public LangStr Description { get; set; } = a.Description;
-    public IEnumerable<Guid> FileIds { get; set; } = a.FileIds;
+    public IEnumerable<FileInfoDto> Files { get; set; } = [];
 
     public DateTime? Deadline { get; set; } = a.Deadline;
     public bool IsGroupAssignment { get; set; } = a.IsGroupAssignment;
@@ -31,4 +32,6 @@ public class ComponentWithGradeDto(AssignmentComponent c) : ComponentShortDto(c)
 {
     public GradeDto? GroupGrade { get; set; }
     public GradeDto IndividualGrade { get; set; } = default!;
+
+    public SubmissionDto? Submission { get; set; }
 }

@@ -1,5 +1,11 @@
-﻿using GradingModule.Application.Commands.Grades;
+﻿using ApiClients.OpenApi.Clients.FileNamespace;
+
+using GradingModule.Application.Commands.Grades;
 using GradingModule.Tests.UnitTests.Mocks;
+
+using Microsoft.Kiota.Abstractions;
+
+using Moq;
 
 namespace GradingModule.Tests.UnitTests;
 
@@ -12,9 +18,12 @@ public class GetStudentGradesTest
         var context = new GradingContextMockBuilder().WithSomeGrades(out var userId, out var courseId, out var grades)
             .Build();
 
+        var adapter = new Mock<IRequestAdapter>();
+        var fileClient = new FileClient(adapter.Object);
+
         var query = new GetStudentGradesQuery(userId, courseId, false);
 
-        var handler = new GetStudentGradesQueryHandler(context);
+        var handler = new GetStudentGradesQueryHandler(context, fileClient);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);

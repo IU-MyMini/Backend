@@ -1,4 +1,8 @@
-﻿using GradingModule.Application.Dtos;
+﻿using ApiClients.OpenApi.Clients.FileNamespace;
+
+using BuildingBlocks.Application.File.Download;
+
+using GradingModule.Application.Dtos;
 using GradingModule.Domain;
 using GradingModule.Infrastructure;
 
@@ -10,7 +14,7 @@ namespace GradingModule.Application.Commands.Grades;
 
 public record GetStudentGradesQuery(Guid UserId, Guid CourseId, bool IsAdmin) : IRequest<StudentGradesDto>;
 
-public class GetStudentGradesQueryHandler(GradingContext context)
+public class GetStudentGradesQueryHandler(GradingContext context, FileClient fileClient)
     : IRequestHandler<GetStudentGradesQuery, StudentGradesDto>
 {
     public async Task<StudentGradesDto> Handle(GetStudentGradesQuery request, CancellationToken cancellationToken)
@@ -31,11 +35,42 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                              )
                          )
                          .Include(course => course.CourseParticipants)
+                         .Include(c => c.Assignments)
+                         .ThenInclude(a => a.Components)
+                         .ThenInclude(
+                             c => c.Submissions.Where(
+                                 s => s.SubmittedByParticipantId.Equals(participant.Id)
+                                      || s.SubmittedByGroupId.Equals(participant.GroupId)
+                             )
+                         )
                          .SingleOrDefaultAsync(c => c.Id.Equals(request.CourseId), cancellationToken)
                      ?? throw Errors.Course.NotFound;
 
         if (!request.IsAdmin && !course.CourseParticipants.Any(p => p.UserId.Equals(request.UserId)))
             throw Errors.Course.NotAllowed;
+
+        var files = (await fileClient.Api.File.FileInfos.GetAsync(
+            rc =>
+            {
+                rc.QueryParameters.FileIds = course.Assignments.SelectMany(
+                        a => a.FileIds.Concat(
+                            a.Components.SelectMany(c => c.FileIds.Concat(c.Submissions.SelectMany(s => s.FileIds)))
+                        )
+                    )
+                    .Cast<Guid?>()
+                    .ToArray();
+            },
+            cancellationToken
+        ))!.ToDictionary(
+            f => f.Id!.Value,
+            f => new FileInfoDto
+            {
+                Id = f.Id!.Value,
+                FileName = f.FileName!,
+                ContentType = f.ContentType!,
+                CreatedAt = f.CreatedAt!.Value.DateTime
+            }
+        );
 
         var dto = new StudentGradesDto
         {
@@ -50,13 +85,14 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                                 .Select(
                                     c => new ComponentWithGradeDto(c)
                                     {
-                                        GroupGrade = new GradeDto
-                                        {
-                                            AssignedGrade = c.Grades
-                                                .FirstOrDefault(g => g.GroupId.Equals(participant.GroupId))
-                                                ?.Grade,
-                                            MaxGrade = c.MaxPoints
-                                        },
+                                        GroupGrade
+                                            = new GradeDto
+                                            {
+                                                AssignedGrade = c.Grades
+                                                    .FirstOrDefault(g => g.GroupId.Equals(participant.GroupId))
+                                                    ?.Grade,
+                                                MaxGrade = c.MaxPoints
+                                            },
                                         IndividualGrade = new GradeDto
                                         {
                                             AssignedGrade
@@ -69,10 +105,20 @@ public class GetStudentGradesQueryHandler(GradingContext context)
                                                       )
                                                       ?.Grade,
                                             MaxGrade = c.MaxPoints
-                                        }
+                                        },
+                                        Files = c.FileIds.Select(id => files[id]),
+                                        Submission = c.Submissions.Count > 0
+                                            ? new SubmissionDto(c.Submissions.First())
+                                            {
+                                                Files = c.Submissions.First()
+                                                    .FileIds.Select(id => files[id])
+                                                    .ToList()
+                                            }
+                                            : null
                                     }
                                 )
-                                .ToList()
+                                .ToList(),
+                            Files = a.FileIds.Select(id => files[id])
                         };
 
                         dto.TotalGrade = new GradeDto
