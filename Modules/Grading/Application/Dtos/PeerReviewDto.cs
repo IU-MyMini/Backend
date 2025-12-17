@@ -2,6 +2,7 @@ namespace GradingModule.Application.Dtos;
 
 public class PeerReviewDto
 {
+    public Guid PeerReviewId { get; set; }
     public Guid SourceComponentId { get; set; }
     public Guid TargetComponentId { get; set; }
     public Guid SourceGroupId { get; set; }

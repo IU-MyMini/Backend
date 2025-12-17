@@ -62,6 +62,7 @@ public class GetGroupsWithGradesQueryHandler(
                 g => g.Select(
                     r => new PeerReviewDto
                     {
+                        PeerReviewId = r.Id,
                         SourceComponentId = r.SourceComponentId,
                         TargetComponentId = r.TargetComponentId,
                         SourceGroupId = r.SourceGroupId,

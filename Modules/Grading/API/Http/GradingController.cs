@@ -179,4 +179,12 @@ public class GradingController(IMediator mediator) : Controller
                 roles.Contains(AdminRole)
             )
         );
+
+    [HttpDelete]
+    public Task PeerReview(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromQuery] Guid peerReviewId
+    )
+        => mediator.Send(new DeletePeerReviewCommand(userId, peerReviewId, roles.Contains(AdminRole)));
 }
