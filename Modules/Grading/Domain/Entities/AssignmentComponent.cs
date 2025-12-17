@@ -13,5 +13,4 @@ public class AssignmentComponent : Entity<Guid>
     public Assignment Assignment { get; set; } = default!;
     public ICollection<ComponentGrade> Grades { get; set; } = default!;
     public ICollection<Submission> Submissions { get; set; } = default!;
-    public ICollection<PeerReview> PeerReviews { get; set; } = default!;
 }

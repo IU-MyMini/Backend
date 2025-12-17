@@ -49,17 +49,53 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
         if (!request.IsAdmin && !course.CourseParticipants.Any(p => p.UserId.Equals(request.UserId)))
             throw Errors.Course.NotAllowed;
 
+        var peerReviews = await context.PeerReviews
+            .Where(r => r.SourceGroupId.Equals(participant.GroupId) || r.TargetGroupId.Equals(participant.GroupId))
+            .Include(peerReview => peerReview.SourceComponent)
+            .ThenInclude(assignmentComponent => assignmentComponent.Submissions)
+            .Include(peerReview => peerReview.TargetComponent)
+            .ThenInclude(assignmentComponent => assignmentComponent.Submissions)
+            .Include(peerReview => peerReview.TargetGroup)
+            .Include(peerReview => peerReview.SourceGroup)
+            .ToListAsync(cancellationToken);
+
+        var outgoingPeerReviews = peerReviews.Where(r => r.SourceGroupId.Equals(participant.GroupId)).ToList();
+        var incomingPeerReviews = peerReviews.Where(r => r.TargetGroupId.Equals(participant.GroupId)).ToList();
+
+        var fileIds = course.Assignments.SelectMany(
+            a => a.FileIds.Concat(
+                a.Components.SelectMany(c => c.FileIds.Concat(c.Submissions.SelectMany(s => s.FileIds)))
+            )
+        );
+
+        foreach (var r in outgoingPeerReviews)
+        {
+            r.TargetComponent.Submissions = r.TargetComponent.Submissions
+                .Where(s => s.SubmittedByGroupId.Equals(r.TargetGroupId))
+                .ToList();
+
+            r.SourceComponent.Submissions = [];
+        }
+
+        foreach (var r in incomingPeerReviews)
+        {
+            r.SourceComponent.Submissions = r.SourceComponent.Submissions
+                .Where(s => s.SubmittedByGroupId.Equals(r.SourceGroupId))
+                .ToList();
+
+            r.TargetComponent.Submissions = [];
+        }
+
+        fileIds = fileIds.Concat(
+            outgoingPeerReviews.SelectMany(r => r.TargetComponent.Submissions.SelectMany(s => s.FileIds))
+        );
+
+        fileIds = fileIds.Concat(
+            incomingPeerReviews.SelectMany(r => r.SourceComponent.Submissions.SelectMany(s => s.FileIds))
+        );
+
         var files = (await fileClient.Api.File.FileInfos.GetAsync(
-            rc =>
-            {
-                rc.QueryParameters.FileIds = course.Assignments.SelectMany(
-                        a => a.FileIds.Concat(
-                            a.Components.SelectMany(c => c.FileIds.Concat(c.Submissions.SelectMany(s => s.FileIds)))
-                        )
-                    )
-                    .Cast<Guid?>()
-                    .ToArray();
-            },
+            rc => { rc.QueryParameters.FileIds = fileIds.Cast<Guid?>().ToArray(); },
             cancellationToken
         ))!.ToDictionary(
             f => f.Id!.Value,
@@ -93,28 +129,59 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                                     ?.Grade,
                                                 MaxGrade = c.MaxPoints
                                             },
-                                        IndividualGrade = new GradeDto
-                                        {
-                                            AssignedGrade
-                                                = c.Grades.FirstOrDefault(
-                                                          g => g.CourseParticipantId.Equals(participant.Id)
-                                                      )
-                                                      ?.Grade
-                                                  ?? c.Grades.FirstOrDefault(
-                                                          g => g.GroupId.Equals(participant.GroupId)
-                                                      )
-                                                      ?.Grade,
-                                            MaxGrade = c.MaxPoints
-                                        },
-                                        Files = c.FileIds.Select(id => files[id]),
-                                        Submission = c.Submissions.Count > 0
-                                            ? new SubmissionDto(c.Submissions.First())
+                                        IndividualGrade
+                                            = new GradeDto
                                             {
-                                                Files = c.Submissions.First()
-                                                    .FileIds.Select(id => files[id])
-                                                    .ToList()
+                                                AssignedGrade
+                                                    = c.Grades.FirstOrDefault(
+                                                              g => g.CourseParticipantId.Equals(participant.Id)
+                                                          )
+                                                          ?.Grade
+                                                      ?? c.Grades.FirstOrDefault(
+                                                              g => g.GroupId.Equals(participant.GroupId)
+                                                          )
+                                                          ?.Grade,
+                                                MaxGrade = c.MaxPoints
+                                            },
+                                        Files = c.FileIds.Select(id => files[id]),
+                                        Submission
+                                            = c.Submissions.Count > 0
+                                                ? new SubmissionDto(c.Submissions.First())
+                                                {
+                                                    Files = c.Submissions.First()
+                                                        .FileIds.Select(id => files[id])
+                                                        .ToList()
+                                                }
+                                                : null,
+                                        OutgoingPeerReviews
+                                            = outgoingPeerReviews.Select(
+                                                r => new PeerReviewStudentDto
+                                                {
+                                                    Group = new GroupShortDto(r.TargetGroup),
+                                                    Submission
+                                                        = r.TargetComponent.Submissions.Select(
+                                                                s => new SubmissionDto(s)
+                                                                {
+                                                                    Files = s.FileIds.Select(id => files[id])
+                                                                        .ToList()
+                                                                }
+                                                            )
+                                                            .FirstOrDefault()
+                                                }
+                                            ),
+                                        IncomingPeerReviews = incomingPeerReviews.Select(
+                                            r => new PeerReviewStudentDto
+                                            {
+                                                Group = new GroupShortDto(r.SourceGroup),
+                                                Submission = r.SourceComponent.Submissions.Select(
+                                                        s => new SubmissionDto(s)
+                                                        {
+                                                            Files = s.FileIds.Select(id => files[id]).ToList()
+                                                        }
+                                                    )
+                                                    .FirstOrDefault()
                                             }
-                                            : null
+                                        )
                                     }
                                 )
                                 .ToList(),

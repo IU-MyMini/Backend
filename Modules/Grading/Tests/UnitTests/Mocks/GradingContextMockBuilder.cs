@@ -58,7 +58,6 @@ public class GradingContextMockBuilder(string dbName = "Test.Grading")
                             MaxPoints = 100,
                             Grades = [],
                             Submissions = [],
-                            PeerReviews = []
                         },
                         new AssignmentComponent
                         {
@@ -69,7 +68,6 @@ public class GradingContextMockBuilder(string dbName = "Test.Grading")
                             MaxPoints = 100,
                             Grades = [],
                             Submissions = [],
-                            PeerReviews = []
                         },
                         new AssignmentComponent
                         {
@@ -80,7 +78,6 @@ public class GradingContextMockBuilder(string dbName = "Test.Grading")
                             MaxPoints = 100,
                             Grades = [],
                             Submissions = [],
-                            PeerReviews = []
                         }
                     ]
                 },
@@ -103,7 +100,6 @@ public class GradingContextMockBuilder(string dbName = "Test.Grading")
                             MaxPoints = 100,
                             Grades = [],
                             Submissions = [],
-                            PeerReviews = []
                         },
                         new AssignmentComponent
                         {
@@ -114,7 +110,6 @@ public class GradingContextMockBuilder(string dbName = "Test.Grading")
                             MaxPoints = 100,
                             Grades = [],
                             Submissions = [],
-                            PeerReviews = []
                         }
                     ]
                 }

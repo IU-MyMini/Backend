@@ -6,18 +6,15 @@ public class PeerReview : Entity<Guid>
 {
     public int? AssignedGrade { get; set; }
 
-    public Guid ComponentId { get; set; }
-    public AssignmentComponent Component { get; set; } = default!;
+    public Guid SourceComponentId { get; set; }
+    public AssignmentComponent SourceComponent { get; set; } = default!;
 
-    // Submission to be reviewed
-    public Guid SubmissionId { get; set; }
-    public Submission Submission { get; set; } = default!;
+    public Guid TargetComponentId { get; set; }
+    public AssignmentComponent TargetComponent { get; set; } = default!;
 
-    // Reviewing group
-    public Guid? GroupId { get; set; }
-    public Group? Group { get; set; } = default!;
+    public Guid SourceGroupId { get; set; }
+    public Group SourceGroup { get; set; } = default!;
 
-    // Reviewing student
-    public Guid? CourseParticipantId { get; set; }
-    public CourseParticipant? CourseParticipant { get; set; } = default!;
+    public Guid TargetGroupId { get; set; }
+    public Group TargetGroup { get; set; } = default!;
 }
