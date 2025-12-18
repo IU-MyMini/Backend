@@ -154,12 +154,30 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                                 }
                                                 : null,
                                         OutgoingPeerReviews
-                                            = outgoingPeerReviews.Select(
-                                                r => new PeerReviewStudentDto
-                                                {
-                                                    Group = new GroupShortDto(r.TargetGroup),
-                                                    Submission
-                                                        = r.TargetComponent.Submissions.Select(
+                                            = outgoingPeerReviews.Where(r => r.SourceComponentId.Equals(c.Id))
+                                                .Select(
+                                                    r => new PeerReviewStudentDto
+                                                    {
+                                                        Group = new GroupShortDto(r.TargetGroup),
+                                                        Submission
+                                                            = r.TargetComponent.Submissions.Select(
+                                                                    s => new SubmissionDto(s)
+                                                                    {
+                                                                        Files = s.FileIds
+                                                                            .Select(id => files[id])
+                                                                            .ToList()
+                                                                    }
+                                                                )
+                                                                .FirstOrDefault()
+                                                    }
+                                                ),
+                                        IncomingPeerReviews
+                                            = incomingPeerReviews.Where(r => r.TargetComponentId.Equals(c.Id))
+                                                .Select(
+                                                    r => new PeerReviewStudentDto
+                                                    {
+                                                        Group = new GroupShortDto(r.SourceGroup),
+                                                        Submission = r.SourceComponent.Submissions.Select(
                                                                 s => new SubmissionDto(s)
                                                                 {
                                                                     Files = s.FileIds.Select(id => files[id])
@@ -167,21 +185,8 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                                                 }
                                                             )
                                                             .FirstOrDefault()
-                                                }
-                                            ),
-                                        IncomingPeerReviews = incomingPeerReviews.Select(
-                                            r => new PeerReviewStudentDto
-                                            {
-                                                Group = new GroupShortDto(r.SourceGroup),
-                                                Submission = r.SourceComponent.Submissions.Select(
-                                                        s => new SubmissionDto(s)
-                                                        {
-                                                            Files = s.FileIds.Select(id => files[id]).ToList()
-                                                        }
-                                                    )
-                                                    .FirstOrDefault()
-                                            }
-                                        )
+                                                    }
+                                                )
                                     }
                                 )
                                 .ToList(),
