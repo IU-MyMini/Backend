@@ -34,4 +34,7 @@ public class ComponentWithGradeDto(AssignmentComponent c) : ComponentShortDto(c)
     public GradeDto IndividualGrade { get; set; } = default!;
 
     public SubmissionDto? Submission { get; set; }
+
+    public IEnumerable<PeerReviewStudentDto> OutgoingPeerReviews { get; set; } = default!;
+    public IEnumerable<PeerReviewStudentDto> IncomingPeerReviews { get; set; } = default!;
 }

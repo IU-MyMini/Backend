@@ -59,4 +59,11 @@ public static class Errors
         public static readonly AppError NotFound = new(ErrorCode.EntityNotFound);
         public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
     }
+
+    public static class PeerReview
+    {
+        public static readonly AppError NotFound = new(ErrorCode.EntityNotFound);
+        public static readonly AppError NotAllowed = new(ErrorCode.Forbidden);
+        public static readonly AppError CoursesMismatch = new(ErrorCode.BadRequest);
+    }
 }

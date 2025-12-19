@@ -4,6 +4,7 @@ using GradingModule.Application.Commands.CourseParticipants;
 using GradingModule.Application.Commands.Courses;
 using GradingModule.Application.Commands.Grades;
 using GradingModule.Application.Commands.Groups;
+using GradingModule.Application.Commands.PeerReviews;
 using GradingModule.Application.Dtos;
 
 using MediatR;
@@ -161,4 +162,29 @@ public class GradingController(IMediator mediator) : Controller
         [FromQuery] Guid courseId
     )
         => mediator.Send(new GetStudentGradesQuery(userId, courseId, false));
+
+    [HttpPost]
+    public Task<Guid> PeerReview(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromBody] AssignPeerReviewRequest request
+    )
+        => mediator.Send(
+            new AssignPeerReviewCommand(
+                userId,
+                request.SourceComponentId,
+                request.TargetComponentId,
+                request.SourceGroupId,
+                request.TargetGroupId,
+                roles.Contains(AdminRole)
+            )
+        );
+
+    [HttpDelete]
+    public Task PeerReview(
+        [FromHeader] Guid userId,
+        [FromHeader] string[] roles,
+        [FromQuery] Guid peerReviewId
+    )
+        => mediator.Send(new DeletePeerReviewCommand(userId, peerReviewId, roles.Contains(AdminRole)));
 }

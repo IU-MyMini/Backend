@@ -51,10 +51,6 @@ public class GradingContext(DbContextOptions options) : AppDbContext(options)
                     .HasMany(c => c.Submissions)
                     .WithOne(s => s.Component);
 
-        modelBuilder.Entity<AssignmentComponent>()
-                    .HasMany(c => c.PeerReviews)
-                    .WithOne(r => r.Component);
-
         modelBuilder.Entity<Group>()
                     .HasMany(g => g.Members)
                     .WithOne(m => m.Group);
@@ -66,10 +62,6 @@ public class GradingContext(DbContextOptions options) : AppDbContext(options)
         modelBuilder.Entity<Group>()
                     .HasMany(g => g.Submissions)
                     .WithOne(s => s.SubmittedByGroup);
-
-        modelBuilder.Entity<Group>()
-                    .HasMany(g => g.AuthoredPeerReviews)
-                    .WithOne(r => r.Group);
 
         modelBuilder.Entity<CourseParticipant>()
                     .HasMany(p => p.Grades)
@@ -84,8 +76,20 @@ public class GradingContext(DbContextOptions options) : AppDbContext(options)
                     .WithOne();
 
         modelBuilder.Entity<PeerReview>()
-                    .HasOne(r => r.Submission)
-                    .WithMany(s => s.ReceivedPeerReviews);
+                    .HasOne(r => r.SourceComponent)
+                    .WithMany();
+
+        modelBuilder.Entity<PeerReview>()
+                    .HasOne(r => r.TargetComponent)
+                    .WithMany();
+
+        modelBuilder.Entity<PeerReview>()
+                    .HasOne(r => r.SourceGroup)
+                    .WithMany();
+
+        modelBuilder.Entity<PeerReview>()
+                    .HasOne(r => r.TargetGroup)
+                    .WithMany();
 
         modelBuilder.Entity<Teacher>()
                     .HasOne<User>()

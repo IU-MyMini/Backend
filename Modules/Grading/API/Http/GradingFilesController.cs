@@ -329,7 +329,7 @@ public class GradingFilesController(IMediator mediator) : Controller
     public async Task<Guid> SubmissionFile(
         [FromHeader] Guid userId,
         [FromHeader] string[] roles,
-        [AllowedTypes("pdf")] IFormFile file,
+        IFormFile file,
         [FromForm] Guid assignmentComponentId,
         [FromForm] Guid? existingFileId
     )

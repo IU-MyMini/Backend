@@ -54,6 +54,23 @@ public class GetGroupsWithGradesQueryHandler(
         if (!request.IsAdmin && !assignment.Course.Teachers.Any(t => t.UserId.Equals(request.UserId)))
             throw Errors.Assignment.NotAllowed;
 
+        var peerReviews
+            = (await context.PeerReviews.Where(r => r.SourceComponent.AssignmentId.Equals(assignment.Id))
+                .ToListAsync(cancellationToken)).GroupBy(r => r.SourceGroupId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(
+                    r => new PeerReviewDto
+                    {
+                        PeerReviewId = r.Id,
+                        SourceComponentId = r.SourceComponentId,
+                        TargetComponentId = r.TargetComponentId,
+                        SourceGroupId = r.SourceGroupId,
+                        TargetGroupId = r.TargetGroupId
+                    }
+                )
+            );
+
         var userIds = assignment.Course.Groups.SelectMany(g => g.Members).Select(p => p.UserId).Cast<Guid?>().ToList();
         var personalUsers = await personalClient.Api.Personal.SearchByIds.PostAsync(
                                 userIds,
@@ -111,7 +128,11 @@ public class GetGroupsWithGradesQueryHandler(
                 Submissions = g.Submissions.ToDictionary(
                     s => s.ComponentId,
                     s => new SubmissionDto(s) { Files = s.FileIds.Select(id => files[id]).ToList() }
-                )
+                ),
+                PeerReviews = peerReviews.GetValueOrDefault(g.Id)
+                                  ?.GroupBy(r => r.SourceComponentId)
+                                  .ToDictionary(group => group.Key, group => group.ToList())
+                              ?? []
             }
         );
     }

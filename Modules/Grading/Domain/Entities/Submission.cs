@@ -15,6 +15,4 @@ public class Submission : Entity<Guid>
     public CourseParticipant? SubmittedByParticipant { get; set; }
     public Guid? SubmittedByGroupId { get; set; }
     public Group? SubmittedByGroup { get; set; }
-
-    public ICollection<PeerReview> ReceivedPeerReviews { get; set; } = default!;
 }
