@@ -43,6 +43,7 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                       || s.SubmittedByGroupId.Equals(participant.GroupId)
                              )
                          )
+                         .AsNoTracking()
                          .SingleOrDefaultAsync(c => c.Id.Equals(request.CourseId), cancellationToken)
                      ?? throw Errors.Course.NotFound;
 
@@ -57,6 +58,7 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
             .ThenInclude(assignmentComponent => assignmentComponent.Submissions)
             .Include(peerReview => peerReview.TargetGroup)
             .Include(peerReview => peerReview.SourceGroup)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         var outgoingPeerReviews = peerReviews.Where(r => r.SourceGroupId.Equals(participant.GroupId)).ToList();
