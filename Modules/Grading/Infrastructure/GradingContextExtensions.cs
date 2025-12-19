@@ -21,62 +21,66 @@ public static class GradingContextExtensions
         bool forViewing,
         CancellationToken cancellationToken = default
     )
-        => courseEntityType switch
+    {
+        switch (courseEntityType)
         {
-            ECourseEntityType.Assignment => (await context.Assignments.Where(a => a.Id.Equals(courseEntityId))
-                                                .Where(
-                                                    a => userId == null
-                                                         || a.Course.Teachers.Any(t => t.UserId.Equals(userId))
-                                                         || forViewing
-                                                         && a.Course.CourseParticipants.Any(
-                                                             p => p.UserId.Equals(userId)
-                                                         )
-                                                )
-                                                .SingleOrDefaultAsync(cancellationToken))?.FileIds
-                                            ?? throw Errors.Assignment.NotFound,
-            ECourseEntityType.AssignmentComponent => (await context.AssignmentComponents
-                                                         .Where(c => c.Id.Equals(courseEntityId))
-                                                         .Where(
-                                                             c => userId == null
-                                                                  || c.Assignment.Course.Teachers.Any(
-                                                                      t => t.UserId.Equals(userId)
-                                                                  )
-                                                                  || forViewing
-                                                                  && c.Assignment.Course.CourseParticipants.Any(
-                                                                      p => p.UserId.Equals(userId)
-                                                                  )
-                                                         )
-                                                         .SingleOrDefaultAsync(cancellationToken))?.FileIds
-                                                     ?? throw Errors.AssignmentComponent.NotFound,
-            ECourseEntityType.ComponentGrade => (await context.ComponentGrades.Where(g => g.Id.Equals(courseEntityId))
-                                                    .Where(
-                                                        g => userId == null
-                                                             || g.Component.Assignment.Course.Teachers.Any(
-                                                                 t => t.UserId.Equals(userId)
-                                                             )
-                                                             || forViewing
-                                                             && g.Component.Assignment.Course.CourseParticipants.Any(
-                                                                 p => p.UserId.Equals(userId)
-                                                             )
-                                                    )
-                                                    .SingleOrDefaultAsync(cancellationToken))?.FileIds
-                                                ?? throw Errors.Grade.NotFound,
-            ECourseEntityType.Submission => (await context.Submissions.Where(s => s.Id.Equals(courseEntityId))
-                                                .Where(
-                                                    s => userId == null
-                                                         || s.SubmittedByParticipant != null
-                                                         && s.SubmittedByParticipant.UserId.Equals(userId)
-                                                         || s.SubmittedByGroup != null
-                                                         && s.SubmittedByGroup.Members.Any(m => m.UserId.Equals(userId))
-                                                         || forViewing
-                                                         && s.Component.Assignment.Course.Teachers.Any(
-                                                             t => t.UserId.Equals(userId)
-                                                         )
-                                                )
-                                                .SingleOrDefaultAsync(cancellationToken))?.FileIds
-                                            ?? throw Errors.Submission.NotFound,
-            _ => throw new ArgumentOutOfRangeException(nameof(courseEntityType))
-        };
+        case ECourseEntityType.Assignment:
+            return (await context.Assignments.Where(a => a.Id.Equals(courseEntityId))
+                       .Where(
+                           a => userId == null
+                                || a.Course.Teachers.Any(t => t.UserId.Equals(userId))
+                                || forViewing && a.Course.CourseParticipants.Any(p => p.UserId.Equals(userId))
+                       )
+                       .SingleOrDefaultAsync(cancellationToken))?.FileIds
+                   ?? throw Errors.Assignment.NotFound;
+
+        case ECourseEntityType.AssignmentComponent:
+            return (await context.AssignmentComponents.Where(c => c.Id.Equals(courseEntityId))
+                       .Where(
+                           c => userId == null
+                                || c.Assignment.Course.Teachers.Any(t => t.UserId.Equals(userId))
+                                || forViewing
+                                && c.Assignment.Course.CourseParticipants.Any(p => p.UserId.Equals(userId))
+                       )
+                       .SingleOrDefaultAsync(cancellationToken))?.FileIds
+                   ?? throw Errors.AssignmentComponent.NotFound;
+
+        case ECourseEntityType.ComponentGrade:
+            return (await context.ComponentGrades.Where(g => g.Id.Equals(courseEntityId))
+                       .Where(
+                           g => userId == null
+                                || g.Component.Assignment.Course.Teachers.Any(t => t.UserId.Equals(userId))
+                                || forViewing
+                                && g.Component.Assignment.Course.CourseParticipants.Any(p => p.UserId.Equals(userId))
+                       )
+                       .SingleOrDefaultAsync(cancellationToken))?.FileIds
+                   ?? throw Errors.Grade.NotFound;
+
+        case ECourseEntityType.Submission:
+            var hasPeerReview = await context.PeerReviews.Where(
+                    r => r.TargetComponent.Submissions.Any(
+                        s => s.Id.Equals(courseEntityId) && r.SourceGroup.Members.Any(m => m.UserId.Equals(userId))
+                    )
+                )
+                .AnyAsync(cancellationToken);
+
+            return (await context.Submissions.Where(s => s.Id.Equals(courseEntityId))
+                       .Where(
+                           s => userId == null
+                                || s.SubmittedByParticipant != null && s.SubmittedByParticipant.UserId.Equals(userId)
+                                || s.SubmittedByGroup != null
+                                && s.SubmittedByGroup.Members.Any(m => m.UserId.Equals(userId))
+                                || forViewing
+                                && (s.Component.Assignment.Course.Teachers.Any(t => t.UserId.Equals(userId))
+                                    || hasPeerReview)
+                       )
+                       .SingleOrDefaultAsync(cancellationToken))?.FileIds
+                   ?? throw Errors.Submission.NotFound;
+
+        default:
+            throw new ArgumentOutOfRangeException(nameof(courseEntityType));
+        }
+    }
 
     public static async Task<string> GetComponentNameAsync(
         this GradingContext context,
