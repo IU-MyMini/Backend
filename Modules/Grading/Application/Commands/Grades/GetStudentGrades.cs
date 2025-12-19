@@ -90,7 +90,7 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
         );
 
         var files = (await fileClient.Api.File.FileInfos.GetAsync(
-            rc => { rc.QueryParameters.FileIds = fileIds.Cast<Guid?>().ToArray(); },
+            rc => { rc.QueryParameters.FileIds = fileIds.Distinct().Cast<Guid?>().ToArray(); },
             cancellationToken
         ))!.ToDictionary(
             f => f.Id!.Value,
