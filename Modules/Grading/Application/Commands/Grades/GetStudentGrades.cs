@@ -158,6 +158,7 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                                 .Select(
                                                     r => new PeerReviewStudentDto
                                                     {
+                                                        TargetComponentName = r.TargetComponent.Name,
                                                         Group = new GroupShortDto(r.TargetGroup),
                                                         Submission
                                                             = r.TargetComponent.Submissions.Select(
@@ -176,6 +177,7 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                                 .Select(
                                                     r => new PeerReviewStudentDto
                                                     {
+                                                        TargetComponentName = r.TargetComponent.Name,
                                                         Group = new GroupShortDto(r.SourceGroup),
                                                         Submission = r.SourceComponent.Submissions.Select(
                                                                 s => new SubmissionDto(s)
