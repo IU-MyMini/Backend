@@ -70,22 +70,15 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
             )
         );
 
-        foreach (var r in outgoingPeerReviews)
+        foreach (var r in outgoingPeerReviews.Concat(incomingPeerReviews))
         {
             r.TargetComponent.Submissions = r.TargetComponent.Submissions
                 .Where(s => s.SubmittedByGroupId.Equals(r.TargetGroupId))
                 .ToList();
 
-            r.SourceComponent.Submissions = [];
-        }
-
-        foreach (var r in incomingPeerReviews)
-        {
             r.SourceComponent.Submissions = r.SourceComponent.Submissions
                 .Where(s => s.SubmittedByGroupId.Equals(r.SourceGroupId))
                 .ToList();
-
-            r.TargetComponent.Submissions = [];
         }
 
         fileIds = fileIds.Concat(
@@ -160,6 +153,7 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                                 .Select(
                                                     r => new PeerReviewStudentDto
                                                     {
+                                                        SourceComponentName = r.SourceComponent.Name,
                                                         TargetComponentName = r.TargetComponent.Name,
                                                         Group = new GroupShortDto(r.TargetGroup),
                                                         Submission
@@ -179,6 +173,7 @@ public class GetStudentGradesQueryHandler(GradingContext context, FileClient fil
                                                 .Select(
                                                     r => new PeerReviewStudentDto
                                                     {
+                                                        SourceComponentName = r.SourceComponent.Name,
                                                         TargetComponentName = r.TargetComponent.Name,
                                                         Group = new GroupShortDto(r.SourceGroup),
                                                         Submission = r.SourceComponent.Submissions.Select(
